@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lead Collection</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 420px;
+    }
+    h1 { font-size: 1.6rem; color: #1a1a2e; margin-bottom: 0.4rem; }
+    p.subtitle { color: #555; font-size: 0.9rem; margin-bottom: 1.8rem; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; color: #333; margin-bottom: 0.3rem; }
+    input {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 1.2rem;
+    }
+    input:focus { border-color: #4f46e5; }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #4338ca; }
+    button:disabled { background: #a5b4fc; cursor: not-allowed; }
+    #msg {
+      margin-top: 1rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    #msg.success { background: #d1fae5; color: #065f46; display: block; }
+    #msg.error   { background: #fee2e2; color: #991b1b; display: block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Get in Touch</h1>
+    <p class="subtitle">Fill in your details and we'll reach out to you.</p>
+
+    <form id="leadForm">
+      <label for="name">Full Name *</label>
+      <input type="text" id="name" placeholder="John Doe" required />
+
+      <label for="email">Email Address *</label>
+      <input type="email" id="email" placeholder="john@example.com" required />
+
+      <label for="phone">Phone Number</label>
+      <input type="tel" id="phone" placeholder="+1 555 000 0000" />
+
+      <button type="submit" id="submitBtn">Submit</button>
+      <div id="msg"></div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('leadForm');
+    const msg  = document.getElementById('msg');
+    const btn  = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = 'Submitting…';
+      msg.className = '';
+      msg.style.display = 'none';
+
+      const payload = {
+        name:  document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+      };
+
+      try {
+        const res = await fetch('/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msg.textContent = '✅ ' + data.message;
+          msg.className = 'success';
+          form.reset();
+        } else {
+          msg.textContent = '❌ ' + (data.detail || 'Something went wrong.');
+          msg.className = 'error';
+        }
+      } catch (err) {
+        msg.textContent = '❌ Network error. Please try again.';
+        msg.className = 'error';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Submit';
+      }
+    });
+  </script>
+</body>
+</html>
